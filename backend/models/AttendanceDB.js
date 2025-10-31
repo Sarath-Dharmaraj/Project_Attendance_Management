@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const AttendanceDB = new mongoose.Schema({
     userID:{
-        type: Object,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProfileDB',
         required: true
     },
     date:{

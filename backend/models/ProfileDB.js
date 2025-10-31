@@ -8,36 +8,29 @@ const ProfileDB = new mongoose.Schema({
     },
     role:{
         type: String,
-        required: true
+        enum: ["employee", "maanager", "admin"]
     },
     department:{
         type: String,
-        required: true
     },
     contact:{
         type: String,
-        required: true
     },
     joinDate:{
         type: String,
-        required: true
     },
     address:{
         country:{
             type: String,
-            required: true
         },
         state:{
             type: String,
-            required: true
         },
         city:{
             type: String,
-            required: true
         },
         pinCode:{
             type: String,
-            required: true
         }
     }
 },{
