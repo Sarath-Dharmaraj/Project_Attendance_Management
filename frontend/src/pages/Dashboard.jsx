@@ -33,7 +33,7 @@ const Dashboard = () => {
 
   const fetchDashboardData = async (userData, token) => {
     try {
-      const res = await fetch(`http://localhost:3000/dashboard?date=${todayDate}`, {
+      const res = await fetch(`https://project-attendance-management.onrender.com/dashboard?date=${todayDate}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -52,7 +52,7 @@ const Dashboard = () => {
 
   const fetchRectifications = async (userData, token) => {
     try {
-      const res = await fetch('http://localhost:3000/rectifications', { 
+      const res = await fetch('https://project-attendance-management.onrender.com/rectifications', { 
         headers: { 'Authorization': `Bearer ${token}` } 
       });
       const data = await res.json();
@@ -74,7 +74,7 @@ const Dashboard = () => {
   const handleMarkAttendance = async (status) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/attendance/mark', {
+      const res = await fetch('https://project-attendance-management.onrender.com/attendance/mark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ attendance: status })
@@ -96,7 +96,7 @@ const Dashboard = () => {
   const handleEditAttendance = async (targetUserId, date, newStatus) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/attendance/edit', {
+      const res = await fetch('https://project-attendance-management.onrender.com/attendance/edit', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         // FIX: Match the backend variable name perfectly
@@ -120,7 +120,7 @@ const Dashboard = () => {
   const handleRequestRectification = async (date) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/rectification/${user.userId}`, {
+      const res = await fetch(`https://project-attendance-management.onrender.com/rectification/${user.userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ date })

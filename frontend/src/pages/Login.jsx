@@ -12,7 +12,7 @@ const Login = ({ setToken }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/signin', {
+      const response = await fetch('https://project-attendance-management.onrender.com/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password })
