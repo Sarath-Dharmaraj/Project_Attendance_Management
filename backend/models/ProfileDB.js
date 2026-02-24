@@ -8,7 +8,7 @@ const ProfileDB = new mongoose.Schema({
     },
     role:{
         type: String,
-        enum: ["employee", "maanager", "admin"]
+        enum: ["employee", "manager", "admin"]
     },
     department:{
         type: String,

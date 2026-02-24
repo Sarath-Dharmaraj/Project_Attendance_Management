@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const RectifiedDB = new mongoose.Schema({
-    userID:{
+    userId:{
         type: Object,
         required: true
     },
@@ -16,7 +16,7 @@ const RectifiedDB = new mongoose.Schema({
         type: String,
         required: true
     },
-    Attendance:{
+    attendance:{
         type: String,
         enum: ['present', 'absent'],
         required: true

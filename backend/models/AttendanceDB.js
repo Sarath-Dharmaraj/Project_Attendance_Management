@@ -1,8 +1,7 @@
 const mongoose = require('mongoose')
 const AttendanceDB = new mongoose.Schema({
-    userID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ProfileDB',
+    userId:{
+        type: String,
         required: true
     },
     date:{
@@ -17,15 +16,14 @@ const AttendanceDB = new mongoose.Schema({
         type: String,
         required: true
     },
-    Attendance:{
+    attendance:{
         type: String,
         enum: ['present', 'absent'],
         required: true
     },
-    rectifed:{
-        type: String,
-        enum: ["true", "false"],
-        default: "false"
+    rectified:{
+        type: Boolean,
+        default: false
     }
 },{
     timestamp: true
