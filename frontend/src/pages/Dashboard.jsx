@@ -15,17 +15,25 @@ const Dashboard = () => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // Check if current time is past the expiration time
+        const currentTime = Date.now() / 1000; // Convert to seconds
+        if (payload.exp < currentTime) {
+          localStorage.removeItem('token'); // Clear the junk token
+          window.location.href = '/login';   // Send them home
+          return;
+        }
+
         setUser(payload);
         fetchDashboardData(payload, token);
-        // Now we call this for EVERY role so employees can get their history too
         fetchRectifications(payload, token); 
       } catch (e) {
-        showMessage('error', 'Invalid session. Please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
       }
     }
   }, []);
 
-  // Changed to 3 seconds (3000ms)
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: '', text: '' }), 3000); 
@@ -38,14 +46,17 @@ const Dashboard = () => {
       });
       const data = await res.json();
       
-      if (res.ok) {
+      if (res.ok && data?.data) {
         setDashboardData(data.data);
         const myRecord = data.data.find(record => record.userId === userData.userId && record.date === todayDate);
         if (myRecord) {
           setTodayAttendance(myRecord.attendance);
         }
+      } else {
+        setDashboardData([]); // Safety: ensure it's an array
       }
     } catch (err) {
+      setDashboardData([]); // Safety: ensure it's an array on error
       showMessage('error', 'Failed to load dashboard data.');
     }
   };
@@ -57,12 +68,10 @@ const Dashboard = () => {
       });
       const data = await res.json();
       
-      if(res.ok) {
+      if(res.ok && Array.isArray(data)) {
         if (userData.role === 'employee') {
-          // Save an array of just the dates they requested
           setMyRequestedDates(data.map(req => req.date));
         } else {
-          // Managers and Admins see the full list of pending requests
           setRectificationRequests(data);
         }
       }
@@ -99,7 +108,6 @@ const Dashboard = () => {
       const res = await fetch('https://project-attendance-management.onrender.com/attendance/edit', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        // FIX: Match the backend variable name perfectly
         body: JSON.stringify({ targetUserId: targetUserId, date, attendance: newStatus })
       });
       const data = await res.json();
@@ -107,7 +115,6 @@ const Dashboard = () => {
       if (res.ok) {
         showMessage('success', 'Attendance rectified successfully.');
         fetchDashboardData(user, token);
-        // Also refresh the rectification list to remove the approved one
         fetchRectifications(user, token);
       } else {
         showMessage('error', data.message || 'Failed to edit attendance.');
@@ -129,11 +136,9 @@ const Dashboard = () => {
       
       if (res.ok) {
         showMessage('success', 'Rectification request sent to manager.');
-        // Instantly disable the button
         setMyRequestedDates(prev => [...prev, date]); 
       } else if (res.status === 409) {
         showMessage('error', 'Rectification already requested for this date.');
-        // FIX: Force the button to disable even if they click it and get the 409 error!
         setMyRequestedDates(prev => prev.includes(date) ? prev : [...prev, date]);
       } else {
         showMessage('error', data.message);
@@ -145,7 +150,6 @@ const Dashboard = () => {
 
   if (!user) return <div style={{ padding: '20px' }}>Loading Dashboard...</div>;
 
-  // --- INLINE STYLES ---
   const styles = {
     container: { padding: '20px', fontFamily: 'Arial, sans-serif' },
     topRect: {
@@ -180,14 +184,12 @@ const Dashboard = () => {
     table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
     th: { padding: '12px', backgroundColor: '#f8f9fa', borderBottom: '2px solid #dcdde1', color: '#2f3640' },
     td: { padding: '12px', borderBottom: '1px solid #f1f2f6', color: '#353b48' },
-    
-    // Updated Alert Box (Floating, Z-Index 100, Centered)
     alert: { 
       position: 'fixed',
       top: '30px',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 100, // Guarantees it overlaps EVERYTHING
+      zIndex: 100, 
       padding: '15px 30px', 
       borderRadius: '6px', 
       fontWeight: 'bold',
@@ -201,8 +203,6 @@ const Dashboard = () => {
 
   return (
     <div style={styles.container}>
-      
-      {/* Pop-up Alert Box */}
       {message.text && <div style={styles.alert}>{message.text}</div>}
 
       <div style={styles.topRect}>
@@ -210,30 +210,27 @@ const Dashboard = () => {
           <h2 style={styles.name}>{user.userName}</h2>
           <p style={styles.details}>Date: <strong>{todayDate}</strong></p>
           <p style={styles.details}>Department: <strong>{user.department}</strong></p>
-          <p style={styles.details}>Role: <strong>{user.role.toUpperCase()}</strong></p>
+          <p style={styles.details}>Role: <strong>{user.role?.toUpperCase()}</strong></p>
         </div>
         
         <div style={styles.statusBlock}>
           <div>
             Status: <span style={styles.statusBadge}>{todayAttendance ? todayAttendance.toUpperCase() : 'NOT MARKED'}</span>
           </div>
-
-          {user.role !== 'admin' && (
-            (user.role === 'manager' || !todayAttendance) && (
-              <div>
-                <button style={styles.btnPresent} onClick={() => handleMarkAttendance('present')}>
-                  {todayAttendance ? 'Change to Present' : 'Mark Present'}
-                </button>
-                <button style={styles.btnAbsent} onClick={() => handleMarkAttendance('absent')}>
-                  {todayAttendance ? 'Change to Absent' : 'Mark Absent'}
-                </button>
-              </div>
-            )
+          {user.role !== 'admin' && (user.role === 'manager' || !todayAttendance) && (
+            <div>
+              <button style={styles.btnPresent} onClick={() => handleMarkAttendance('present')}>
+                {todayAttendance ? 'Change to Present' : 'Mark Present'}
+              </button>
+              <button style={styles.btnAbsent} onClick={() => handleMarkAttendance('absent')}>
+                {todayAttendance ? 'Change to Absent' : 'Mark Absent'}
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {(user.role === 'manager' || user.role === 'admin') && rectificationRequests.length > 0 && (
+      {(user.role === 'manager' || user.role === 'admin') && (rectificationRequests?.length > 0) && (
         <div style={{ ...styles.card, borderLeft: '4px solid #f7b731' }}>
           <h3 style={styles.sectionTitle}>⚠️ Pending Rectification Requests</h3>
           <table style={styles.table}>
@@ -251,19 +248,10 @@ const Dashboard = () => {
                 <tr key={idx}>
                   <td style={styles.td}>{req.userId}</td>
                   <td style={styles.td}>{req.date}</td>
+                  <td style={styles.td}><span style={{ color: '#eb3b5a', fontWeight: 'bold' }}>{req.attendance?.toUpperCase()}</span></td>
+                  <td style={styles.td}><span style={{ color: '#20bf6b', fontWeight: 'bold' }}>{req.rectification?.toUpperCase()}</span></td>
                   <td style={styles.td}>
-                    <span style={{ color: '#eb3b5a', fontWeight: 'bold' }}>{req.attendance.toUpperCase()}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={{ color: '#20bf6b', fontWeight: 'bold' }}>{req.rectification.toUpperCase()}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <button 
-                      style={{...styles.btnPresent, padding: '6px 12px', fontSize: '12px'}} 
-                      onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}
-                    >
-                      Approve Edit
-                    </button>
+                    <button style={{...styles.btnPresent, padding: '6px 12px', fontSize: '12px'}} onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}>Approve Edit</button>
                   </td>
                 </tr>
               ))}
@@ -273,10 +261,7 @@ const Dashboard = () => {
       )}
 
       <div style={styles.card}>
-        <h3 style={styles.sectionTitle}>
-          {user.role === 'employee' ? 'My Recent Attendance' : `${user.department} Sector Attendance (${todayDate})`}
-        </h3>
-        
+        <h3 style={styles.sectionTitle}>{user.role === 'employee' ? 'My Recent Attendance' : `${user.department} Sector Attendance (${todayDate})`}</h3>
         <table style={styles.table}>
           <thead>
             <tr>
@@ -288,53 +273,28 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {dashboardData.length === 0 ? (
+            {(!dashboardData || dashboardData.length === 0) ? (
               <tr><td colSpan="5" style={{...styles.td, textAlign: 'center'}}>No records found.</td></tr>
             ) : (
               dashboardData.map((record, idx) => (
                 <tr key={idx}>
                   <td style={styles.td}>{record.date}</td>
-                  
                   {user.role !== 'employee' && <td style={styles.td}>{record.userId}</td>}
                   {user.role === 'admin' && <td style={styles.td}>{record.department}</td>}
-                  
                   <td style={styles.td}>
-                    <span style={{ 
-                      padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold',
-                      backgroundColor: record.attendance === 'present' ? '#d4edda' : '#f8d7da',
-                      color: record.attendance === 'present' ? '#155724' : '#721c24'
-                    }}>
-                      {record.attendance.toUpperCase()}
+                    <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', backgroundColor: record.attendance === 'present' ? '#d4edda' : '#f8d7da', color: record.attendance === 'present' ? '#155724' : '#721c24' }}>
+                      {record.attendance?.toUpperCase()}
                     </span>
-                    {record.rectifed && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#f39c12' }}>(Rectified)</span>}
+                    {record.rectified && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#f39c12' }}>(Rectified)</span>}
                   </td>
-                  
                   <td style={styles.td}>
                     {user.role === 'employee' && record.date === todayDate && (
-                      <button 
-                        disabled={myRequestedDates.includes(record.date)}
-                        style={{ 
-                          padding: '6px 12px', 
-                          backgroundColor: myRequestedDates.includes(record.date) ? '#bdc3c7' : '#f1c40f', 
-                          color: '#fff', 
-                          border: 'none', 
-                          borderRadius: '4px', 
-                          cursor: myRequestedDates.includes(record.date) ? 'not-allowed' : 'pointer', 
-                          fontSize: '12px',
-                          fontWeight: 'bold'
-                        }} 
-                        onClick={() => handleRequestRectification(record.date)}
-                      >
-                        {myRequestedDates.includes(record.date) ? 'Edit Requested ⏳' : 'Request Edit'}
+                      <button disabled={myRequestedDates?.includes(record.date)} style={{ padding: '6px 12px', backgroundColor: myRequestedDates?.includes(record.date) ? '#bdc3c7' : '#f1c40f', color: '#fff', border: 'none', borderRadius: '4px', cursor: myRequestedDates?.includes(record.date) ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold' }} onClick={() => handleRequestRectification(record.date)}>
+                        {myRequestedDates?.includes(record.date) ? 'Edit Requested ⏳' : 'Request Edit'}
                       </button>
                     )}
-
                     {(user.role === 'manager' || user.role === 'admin') && (
-                      <select 
-                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }}
-                        value={record.attendance}
-                        onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}
-                      >
+                      <select style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }} value={record.attendance} onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}>
                         <option value="present">Present</option>
                         <option value="absent">Absent</option>
                       </select>
@@ -346,7 +306,6 @@ const Dashboard = () => {
           </tbody>
         </table>
       </div>
-
     </div>
   );
 };
