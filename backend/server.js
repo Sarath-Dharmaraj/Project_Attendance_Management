@@ -45,7 +45,16 @@ app.post('/signup', async (req, res) => {
     });
     await newProfile.save();
 
-    return res.status(201).json({ message: 'User registered successfully' });
+    // NEW: Generate the token instantly upon registration!
+    const token = jwt.sign({
+      userId: newUser._id,
+      userName: newUser.userName,
+      role: newProfile.role,
+      department: newProfile.department
+    }, process.env.jwt_Secret, { expiresIn: '1h' });
+
+    // NEW: Send the token back to the frontend
+    return res.status(201).json({ message: 'User registered successfully', token });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

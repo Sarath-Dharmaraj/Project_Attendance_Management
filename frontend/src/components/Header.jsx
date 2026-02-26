@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { FaUser, FaBell } from "react-icons/fa6";
+import { IoSettings } from "react-icons/io5";
+import { AiFillMoon } from "react-icons/ai";
 
 const Header = ({ setToken }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -51,17 +54,17 @@ const Header = ({ setToken }) => {
         
         {/* Dark Mode Button (Dummy for now) */}
         <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Toggle Dark Mode">
-          🌙
+          <AiFillMoon />
         </button>
 
         {/* Notifications Button */}
         <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Notifications">
-          🔔
+          <FaBell />
         </button>
 
         {/* Settings Button */}
         <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Settings">
-          ⚙️
+          <IoSettings />
         </button>
 
         {/* Profile Wrapper */}
@@ -83,7 +86,7 @@ const Header = ({ setToken }) => {
             }}
             title="Profile"
           >
-            👤
+            <FaUser />
           </button>
 
           {/* Dropdown Menu */}

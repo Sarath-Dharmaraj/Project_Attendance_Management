@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -21,40 +21,19 @@ function App() {
   return (
     <Router>
       <div style={styles.appContainer}>
-        {/* Left Column: Sidebar */}
         {token && <Sidebar />}
 
-        {/* Right Column: Main Content */}
         <div style={styles.mainContent}>
           {token && <Header setToken={setToken} />}
           
           <div style={styles.pageContent}>
             <Routes>
-              {/* AUTH ROUTES: If they have a token, instantly boot them to the Dashboard */}
-              <Route 
-                path="/login" 
-                element={token ? <Navigate to="/" replace /> : <Login setToken={setToken} />} 
-              />
-              <Route 
-                path="/signup" 
-                element={token ? <Navigate to="/" replace /> : <Signup />} 
-              />
-              
-              {/* PROTECTED ROUTES: If they DON'T have a token, boot them to Login */}
-              <Route 
-                path="/" 
-                element={token ? <Dashboard /> : <Navigate to="/login" replace />} 
-              />
-              <Route 
-                path="/settings" 
-                element={token ? <Settings /> : <Navigate to="/login" replace />} 
-              />
-              <Route 
-                path="/log" 
-                element={token ? <Log /> : <Navigate to="/login" replace />} 
-              />
-
-              {/* Catch-all for bad URLs */}
+              {/* AUTH & PROTECTED ROUTES (Single-line style with setToken fix) */}
+              <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login setToken={setToken} />} />
+              <Route path="/signup" element={token ? <Navigate to="/" replace /> : <Signup setToken={setToken} />} />
+              <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" replace />} />
+              <Route path="/settings" element={token ? <Settings /> : <Navigate to="/login" replace />} />
+              <Route path="/log" element={token ? <Log /> : <Navigate to="/login" replace />} />
               <Route path="*" element={<Navigate to={token ? "/" : "/login"} replace />} />
             </Routes>
           </div>

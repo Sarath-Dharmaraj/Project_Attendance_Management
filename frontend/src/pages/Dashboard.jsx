@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaTriangleExclamation } from "react-icons/fa6";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -232,7 +233,7 @@ const Dashboard = () => {
 
       {(user.role === 'manager' || user.role === 'admin') && (rectificationRequests?.length > 0) && (
         <div style={{ ...styles.card, borderLeft: '4px solid #f7b731' }}>
-          <h3 style={styles.sectionTitle}>⚠️ Pending Rectification Requests</h3>
+          <h3 style={styles.sectionTitle}><FaTriangleExclamation  /> Pending Rectification Requests</h3>
           <table style={styles.table}>
             <thead>
               <tr>
