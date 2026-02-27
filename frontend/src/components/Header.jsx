@@ -1,145 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { FaUser, FaBell } from "react-icons/fa6";
-import { IoSettings } from "react-icons/io5";
-import { AiFillMoon } from "react-icons/ai";
+import React from 'react';
+import { FaBars, FaUserCircle, FaMoon, FaBell } from 'react-icons/fa';
 
-const Header = ({ setToken }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [userName, setUserName] = useState('User');
-
-  // Decode the token to get the user's name when the component loads
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        // A neat trick to decode the JWT payload without extra libraries
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserName(payload.userName || 'User');
-      } catch (e) {
-        console.error("Failed to decode token");
-      }
-    }
-  }, []);
-
+const Header = ({ setToken, isMobile, toggleSidebar }) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
-    setToken(null); // Instantly updates the App state to remove layout
-    window.location.href = '/login'; 
-  };
-
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
+    setToken(null);
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between', // Pushes company name left, icons right
-      alignItems: 'center',
-      height: '70px', // About 5-7% of the viewport height
-      backgroundColor: '#ffffff',
-      borderBottom: '1px solid #e0e0e0',
-      padding: '0 30px',
-      position: 'relative', // Needed for the absolute positioning of the dropdown
-      boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-    }}>
-      
-      {/* Left Side: Company Name */}
-      <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#333', letterSpacing: '1px' }}>
-        MyCompany Ltd.
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '10px 15px' : '15px 20px', backgroundColor: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
+        {isMobile && <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#2f3640', display: 'flex', alignItems: 'center', padding: 0 }} onClick={toggleSidebar}><FaBars /></button>}
+        <h2 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', color: '#2f3640', whiteSpace: 'nowrap' }}>Attendance Portal</h2>
       </div>
 
-      {/* Right Side: Icons & Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        
-        {/* Dark Mode Button (Dummy for now) */}
-        <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Toggle Dark Mode">
-          <AiFillMoon />
-        </button>
-
-        {/* Notifications Button */}
-        <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Notifications">
-          <FaBell />
-        </button>
-
-        {/* Settings Button */}
-        <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} title="Settings">
-          <IoSettings />
-        </button>
-
-        {/* Profile Wrapper */}
-        <div style={{ position: 'relative' }}>
-          {/* Profile Icon */}
-          <button 
-            onClick={toggleDropdown}
-            style={{
-              background: '#f0f0f0',
-              border: '1px solid #ccc',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            title="Profile"
-          >
-            <FaUser />
-          </button>
-
-          {/* Dropdown Menu */}
-          {isDropdownOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '50px', // Pushed down just below the icon
-              right: '0',
-              backgroundColor: '#fff',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              width: '180px',
-              display: 'flex',
-              flexDirection: 'column',
-              zIndex: 1000 // Ensures it overlaps page content
-            }}>
-              
-              {/* Username Display */}
-              <div style={{ 
-                padding: '12px 15px', 
-                borderBottom: '1px solid #eee',
-                color: '#555',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                textAlign: 'center'
-              }}>
-                Hi, {userName}
-              </div>
-
-              {/* Logout Option */}
-              <button 
-                onClick={handleLogout}
-                style={{ 
-                  padding: '12px 15px', 
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: '#ff4d4d', // Red to match sidebar style
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  textAlign: 'center'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#fff0f0'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                Log Out
-              </button>
-            </div>
-          )}
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '15px' : '20px' }}>
+        <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '18px' : '20px', cursor: 'pointer', color: '#2f3640', display: 'flex', alignItems: 'center', padding: 0 }} title="Dark Mode"><FaMoon /></button>
+        <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '18px' : '20px', cursor: 'pointer', color: '#2f3640', display: 'flex', alignItems: 'center', padding: 0 }} title="Notifications"><FaBell /></button>
+        <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '22px' : '26px', cursor: 'pointer', color: '#0fb9b1', display: 'flex', alignItems: 'center', padding: 0 }} onClick={handleLogout} title="Profile / Logout"><FaUserCircle /></button>
       </div>
-
     </div>
   );
 };
