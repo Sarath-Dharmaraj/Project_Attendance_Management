@@ -38,22 +38,45 @@ const Login = ({ setToken }) => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f4f7f6', padding: '20px', boxSizing: 'border-box' }}>
-      <form style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '15px', boxSizing: 'border-box' }} onSubmit={handleLogin}>
-        <h2 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>Sign In</h2>
+    <div className="flex justify-center items-center min-h-[80vh] box-border">
+      <form 
+        className="bg-white p-[30px] rounded-lg shadow-[0_4px_8px_rgba(0,0,0,0.1)] w-full max-w-[300px] flex flex-col gap-[15px] box-border" 
+        onSubmit={handleLogin}
+      >
+        <h2 className="text-center m-0 mb-2.5 text-2xl font-bold text-[#111]">Sign In</h2>
         
-        {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center', margin: 0 }}>{error}</p>}
+        {error && <p className="text-red-500 text-[14px] text-center m-0">{error}</p>}
 
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="text" placeholder="Email or Username" required value={identifier} onChange={(e) => setIdentifier(e.target.value)} disabled={isLoading} />
+        <input 
+          className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" 
+          type="text" 
+          placeholder="Email or Username" 
+          required 
+          value={identifier} 
+          onChange={(e) => setIdentifier(e.target.value)} 
+          disabled={isLoading} 
+        />
         
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={isLoading} />
+        <input 
+          className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" 
+          type="password" 
+          placeholder="Password" 
+          required 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          disabled={isLoading} 
+        />
 
-        <button style={{ padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '16px', fontWeight: 'bold', opacity: isLoading ? 0.7 : 1 }} type="submit" disabled={isLoading}>
+        <button 
+          className="p-2.5 bg-[#111] text-white border-none rounded cursor-pointer text-[16px] font-bold transition-colors hover:bg-[#333] disabled:opacity-70 disabled:cursor-not-allowed" 
+          type="submit" 
+          disabled={isLoading}
+        >
           {isLoading ? 'Waking Server ⏳...' : 'Sign In'}
         </button>
         
-        <p style={{ textAlign: 'center', fontSize: '14px', margin: 0 }}>
-          Don't have an account? <Link to="/signup" style={{ color: '#007bff', textDecoration: 'none', pointerEvents: isLoading ? 'none' : 'auto' }}>Register</Link>
+        <p className="text-center text-[14px] m-0 text-[#555]">
+          Don't have an account? <Link to="/signup" className={`text-[#111] font-bold underline hover:text-[#555] ${isLoading ? 'pointer-events-none opacity-50' : ''}`}>Register</Link>
         </p>
       </form>
     </div>

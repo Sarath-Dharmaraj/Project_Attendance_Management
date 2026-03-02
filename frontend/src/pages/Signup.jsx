@@ -37,10 +37,9 @@ const Signup = ({ setToken }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Boom! We get the token directly from the signup response now.
         localStorage.setItem('token', data.token);
         if (setToken) setToken(data.token); 
-        navigate('/'); // Instantly teleport to Dashboard!
+        navigate('/'); 
       } else {
         setError(data.message || 'Signup failed');
         setIsLoading(false); 
@@ -51,48 +50,66 @@ const Signup = ({ setToken }) => {
     }
   };
 
-  const radioGroupStyle = { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', padding: '5px 0' };
-  const labelStyle = { fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' };
-
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f4f7f6', padding: '20px', boxSizing: 'border-box' }}>
-      <form style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '15px', boxSizing: 'border-box' }} onSubmit={handleSignup}>
-        <h2 style={{ textAlign: 'center', margin: '0 0 10px 0' }}>Register</h2>
+    <div className="flex justify-center items-center min-h-[80vh] box-border">
+      <form 
+        className="bg-white p-[30px] rounded-lg shadow-[0_4px_8px_rgba(0,0,0,0.1)] w-full max-w-[380px] flex flex-col gap-[15px] box-border" 
+        onSubmit={handleSignup}
+      >
+        <h2 className="text-center m-0 mb-2.5 text-2xl font-bold text-[#111]">Register</h2>
         
-        {error && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center', margin: 0 }}>{error}</p>}
+        {error && <p className="text-red-500 text-[14px] text-center m-0">{error}</p>}
 
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="text" name="userName" placeholder="Username" required onChange={handleChange} disabled={isLoading} />
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="email" name="email" placeholder="Email" required onChange={handleChange} disabled={isLoading} />
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="password" name="password" placeholder="Password" required onChange={handleChange} disabled={isLoading} />
-        <input style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }} type="password" name="confirmPassword" placeholder="Confirm Password" required onChange={handleChange} disabled={isLoading} />
+        <input className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" type="text" name="userName" placeholder="Username" required onChange={handleChange} disabled={isLoading} />
+        <input className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" type="email" name="email" placeholder="Email" required onChange={handleChange} disabled={isLoading} />
+        <input className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" type="password" name="password" placeholder="Password" required onChange={handleChange} disabled={isLoading} />
+        <input className="p-2.5 rounded border border-[#ccc] text-[16px] text-[#111] outline-none focus:border-[#333] transition-colors" type="password" name="confirmPassword" placeholder="Confirm Password" required onChange={handleChange} disabled={isLoading} />
         
-        <div style={{ margin: '5px 0' }}>
-          <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}>Role:</span>
-          <div style={radioGroupStyle}>
-            <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="role" value="employee" checked={formData.role === 'employee'} onChange={handleChange} disabled={isLoading} /> Employee</label>
-            <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="role" value="manager" checked={formData.role === 'manager'} onChange={handleChange} disabled={isLoading} /> Manager</label>
-            <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="role" value="admin" checked={formData.role === 'admin'} onChange={handleChange} disabled={isLoading} /> Admin</label>
+        <div className="my-[5px]">
+          <span className="text-[14px] font-bold text-[#555]">Role:</span>
+          <div className="flex justify-between flex-wrap gap-2.5 py-[5px]">
+            <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+              <input className="accent-black w-4 h-4" type="radio" name="role" value="employee" checked={formData.role === 'employee'} onChange={handleChange} disabled={isLoading} /> Employee
+            </label>
+            <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+              <input className="accent-black w-4 h-4" type="radio" name="role" value="manager" checked={formData.role === 'manager'} onChange={handleChange} disabled={isLoading} /> Manager
+            </label>
+            <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+              <input className="accent-black w-4 h-4" type="radio" name="role" value="admin" checked={formData.role === 'admin'} onChange={handleChange} disabled={isLoading} /> Admin
+            </label>
           </div>
         </div>
 
         {formData.role !== 'admin' && (
-          <div style={{ margin: '5px 0' }}>
-            <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}>Department:</span>
-            <div style={radioGroupStyle}>
-              <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="department" value="IT" checked={formData.department === 'IT'} onChange={handleChange} disabled={isLoading} /> IT</label>
-              <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="department" value="HR" checked={formData.department === 'HR'} onChange={handleChange} disabled={isLoading} /> HR</label>
-              <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="department" value="Support" checked={formData.department === 'Support'} onChange={handleChange} disabled={isLoading} /> Support</label>
-              <label style={labelStyle}><input style={{ accentColor: 'black' }} type="radio" name="department" value="Operations" checked={formData.department === 'Operations'} onChange={handleChange} disabled={isLoading} /> Operations</label>
+          <div className="my-[5px]">
+            <span className="text-[14px] font-bold text-[#555]">Department:</span>
+            <div className="flex justify-between flex-wrap gap-2.5 py-[5px]">
+              <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+                <input className="accent-black w-4 h-4" type="radio" name="department" value="IT" checked={formData.department === 'IT'} onChange={handleChange} disabled={isLoading} /> IT
+              </label>
+              <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+                <input className="accent-black w-4 h-4" type="radio" name="department" value="HR" checked={formData.department === 'HR'} onChange={handleChange} disabled={isLoading} /> HR
+              </label>
+              <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+                <input className="accent-black w-4 h-4" type="radio" name="department" value="Support" checked={formData.department === 'Support'} onChange={handleChange} disabled={isLoading} /> Support
+              </label>
+              <label className="text-[15px] cursor-pointer flex items-center gap-[5px] text-[#111]">
+                <input className="accent-black w-4 h-4" type="radio" name="department" value="Operations" checked={formData.department === 'Operations'} onChange={handleChange} disabled={isLoading} /> Operations
+              </label>
             </div>
           </div>
         )}
 
-        <button style={{ padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '16px', fontWeight: 'bold', opacity: isLoading ? 0.7 : 1, marginTop: '10px' }} type="submit" disabled={isLoading}>
+        <button 
+          className="p-2.5 mt-2.5 bg-[#111] text-white border-none rounded cursor-pointer text-[16px] font-bold transition-colors hover:bg-[#333] disabled:opacity-70 disabled:cursor-not-allowed" 
+          type="submit" 
+          disabled={isLoading}
+        >
           {isLoading ? 'Creating Account ⏳...' : 'Sign Up'}
         </button>
         
-        <p style={{ textAlign: 'center', fontSize: '14px', margin: '10px 0 0 0' }}>
-          Already have an account? <Link to="/login" style={{ color: '#007bff', textDecoration: 'none', pointerEvents: isLoading ? 'none' : 'auto' }}>Sign In</Link>
+        <p className="text-center text-[14px] m-0 mt-2.5 text-[#555]">
+          Already have an account? <Link to="/login" className={`text-[#111] font-bold underline hover:text-[#555] ${isLoading ? 'pointer-events-none opacity-50' : ''}`}>Sign In</Link>
         </p>
       </form>
     </div>

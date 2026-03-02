@@ -4,10 +4,9 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard.jsx';
+import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Log from './pages/Log';
-import './App.css';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -23,30 +22,34 @@ function App() {
 
   return (
     <Router>
-      {/* Softened the dark mode background to #121212 for less eye strain */}
-      <div className={isDarkMode ? 'dark-mode' : 'light-mode'} style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif', backgroundColor: isDarkMode ? '#121212' : '#f4f7f6', color: isDarkMode ? '#e0e0e0' : '#111', overflow: 'hidden', transition: 'background-color 0.3s ease' }}>
+      <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#121212] text-[#e0e0e0]' : 'bg-[#f4f7f6] text-[#111]'}`}>
         
+        {/* Sidebar Container */}
         {token && (
-          <div style={{ position: isMobile ? 'absolute' : 'relative', zIndex: 1000, height: '100%', transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'translateX(0)', transition: 'transform 0.3s ease-in-out', backgroundColor: isDarkMode ? '#1a1a1a' : '#2f3640', width: '250px', borderRight: isDarkMode ? '1px solid #333' : 'none' }}>
-            <Sidebar closeSidebar={() => setIsSidebarOpen(false)} isMobile={isMobile} isDarkMode={isDarkMode} />
+          <div className={`h-full w-[250px] z-[1000] transition-transform duration-300 ease-in-out ${isMobile ? 'absolute' : 'relative'} ${isMobile && !isSidebarOpen ? '-translate-x-full' : 'translate-x-0'} ${isDarkMode ? 'bg-[#1a1a1a] border-r border-[#333]' : 'bg-[#1a1a1a] border-none'}`}>
+            <Sidebar closeSidebar={() => setIsSidebarOpen(false)} isMobile={isMobile} isDarkMode={isDarkMode} setToken={setToken} />
           </div>
         )}
 
+        {/* Mobile Backdrop Overlay */}
         {token && isMobile && isSidebarOpen && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setIsSidebarOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 z-[999]" onClick={() => setIsSidebarOpen(false)} />
         )}
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col w-full relative">
           {token && <Header token={token} setToken={setToken} isMobile={isMobile} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
           
-          <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+          <div className="p-5 overflow-y-auto flex-1">
             <Routes>
               <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login setToken={setToken} />} />
               <Route path="/signup" element={token ? <Navigate to="/" replace /> : <Signup setToken={setToken} />} />
-              {/* NEW: Passed isDarkMode to the Dashboard! */}
-              <Route path="/" element={token ? <Dashboard isDarkMode={isDarkMode} /> : <Navigate to="/login" replace />} />
+              
+              {/* Passed setToken down so Dashboard can smoothly kick out expired users */}
+              <Route path="/" element={token ? <Dashboard isDarkMode={isDarkMode} setToken={setToken} /> : <Navigate to="/login" replace />} />
               <Route path="/settings" element={token ? <Settings isDarkMode={isDarkMode} /> : <Navigate to="/login" replace />} />
               <Route path="/log" element={token ? <Log isDarkMode={isDarkMode} /> : <Navigate to="/login" replace />} />
+              
               <Route path="*" element={<Navigate to={token ? "/" : "/login"} replace />} />
             </Routes>
           </div>

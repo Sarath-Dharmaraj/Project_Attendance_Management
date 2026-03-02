@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBars, FaUserCircle, FaMoon, FaSun, FaBell } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ token, setToken, isMobile, toggleSidebar, isDarkMode, setIsDarkMode }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileRef = useRef(null); // Reference to detect outside clicks!
+  const profileRef = useRef(null); 
+  const navigate = useNavigate();
 
-  // The "Click Outside" Listener
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -29,39 +30,45 @@ const Header = ({ token, setToken, isMobile, toggleSidebar, isDarkMode, setIsDar
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
+    navigate('/login');
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '10px 15px' : '15px 20px', backgroundColor: isDarkMode ? '#1e1e1e' : '#fff', borderBottom: isDarkMode ? '1px solid #333' : '1px solid #eee', boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.02)', zIndex: 10 }}>
+    <div className={`flex justify-between items-center z-10 transition-colors duration-300 ${isMobile ? 'py-2.5 px-4' : 'py-4 px-5'} ${isDarkMode ? 'bg-[#1e1e1e] border-b border-[#333] shadow-none' : 'bg-white border-b border-[#eee] shadow-[0_2px_4px_rgba(0,0,0,0.02)]'}`}>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
-        {isMobile && <button style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: isDarkMode ? '#e0e0e0' : '#111', display: 'flex', alignItems: 'center', padding: 0 }} onClick={toggleSidebar}><FaBars /></button>}
-        
-        <div style={{ display: 'flex', alignItems: 'flex-start', color: isDarkMode ? '#e0e0e0' : '#111', lineHeight: 1 }}>
-          <span style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold', marginTop: isMobile ? '2px' : '3px', textDecoration: "underline" }}>edu</span>
-          <span style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '900', letterSpacing: '-0.5px' }}>Learner</span>
+      <div className={`flex items-center ${isMobile ? 'gap-2.5' : 'gap-[15px]'}`}>
+        {isMobile && (
+          <button className={`flex items-center p-0 text-xl cursor-pointer bg-transparent border-none ${isDarkMode ? 'text-[#e0e0e0]' : 'text-[#111]'}`} onClick={toggleSidebar}>
+            <FaBars />
+          </button>
+        )}
+        <div className={`flex items-start leading-none ${isDarkMode ? 'text-[#e0e0e0]' : 'text-[#111]'}`}>
+          <span className={`font-bold underline ${isMobile ? 'text-xs mt-[2px]' : 'text-sm mt-[3px]'}`}>edu</span>
+          <span className={`font-black tracking-[-0.5px] ${isMobile ? 'text-[20px]' : 'text-[24px]'}`}>Learner</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '15px' : '20px' }}>
-        <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '18px' : '20px', cursor: 'pointer', color: isDarkMode ? '#a0a0a0' : '#555', display: 'flex', alignItems: 'center', padding: 0 }} onClick={() => setIsDarkMode(!isDarkMode)} title="Toggle Dark Mode">
+      <div className={`flex items-center ${isMobile ? 'gap-[15px]' : 'gap-5'}`}>
+        <button className={`flex items-center p-0 cursor-pointer bg-transparent border-none transition-colors hover:opacity-80 ${isMobile ? 'text-[18px]' : 'text-[20px]'} ${isDarkMode ? 'text-[#a0a0a0]' : 'text-[#555]'}`} onClick={() => setIsDarkMode(!isDarkMode)} title="Toggle Dark Mode">
           {isDarkMode ? <FaSun /> : <FaMoon />}
         </button>
-        
-        <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '18px' : '20px', cursor: 'pointer', color: isDarkMode ? '#a0a0a0' : '#555', display: 'flex', alignItems: 'center', padding: 0 }} title="Notifications">
+        <button className={`flex items-center p-0 cursor-pointer bg-transparent border-none transition-colors hover:opacity-80 ${isMobile ? 'text-[18px]' : 'text-[20px]'} ${isDarkMode ? 'text-[#a0a0a0]' : 'text-[#555]'}`} title="Notifications">
           <FaBell />
         </button>
         
-        {/* Attached the Ref to this wrapper to track clicks! */}
-        <div ref={profileRef} style={{ position: 'relative' }}>
-          <button style={{ background: 'none', border: 'none', fontSize: isMobile ? '22px' : '26px', cursor: 'pointer', color: isDarkMode ? '#e0e0e0' : '#111', display: 'flex', alignItems: 'center', padding: 0 }} onClick={() => setIsProfileOpen(!isProfileOpen)} title="Profile Menu">
+        <div ref={profileRef} className="relative">
+          <button className={`flex items-center p-0 cursor-pointer bg-transparent border-none transition-transform hover:scale-105 ${isMobile ? 'text-[22px]' : 'text-[26px]'} ${isDarkMode ? 'text-[#e0e0e0]' : 'text-[#111]'}`} onClick={() => setIsProfileOpen(!isProfileOpen)} title="Profile Menu">
             <FaUserCircle />
           </button>
           
           {isProfileOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '15px', backgroundColor: isDarkMode ? '#2d2d2d' : '#fff', border: isDarkMode ? '1px solid #444' : '1px solid #eee', borderRadius: '8px', padding: '15px', width: '160px', boxShadow: '0 8px 16px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '15px', zIndex: 20 }}>
-              <div style={{ fontSize: '14px', color: isDarkMode ? '#bbb' : '#555', borderBottom: isDarkMode ? '1px solid #444' : '1px solid #eee', paddingBottom: '10px', wordBreak: 'break-all' }}>Hi, <strong style={{ color: isDarkMode ? '#fff' : '#111' }}>{userName}</strong></div>
-              <button onClick={handleLogout} style={{ width: '100%', padding: '8px', backgroundColor: isDarkMode ? '#e0e0e0' : '#111', color: isDarkMode ? '#111' : '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>Logout</button>
+            <div className={`absolute top-full right-0 mt-[15px] w-[160px] p-[15px] rounded-lg flex flex-col gap-[15px] z-20 shadow-[0_8px_16px_rgba(0,0,0,0.2)] ${isDarkMode ? 'bg-[#2d2d2d] border border-[#444]' : 'bg-white border border-[#eee]'}`}>
+              <div className={`text-sm pb-2.5 break-all border-b ${isDarkMode ? 'text-[#bbb] border-[#444]' : 'text-[#555] border-[#eee]'}`}>
+                Hi, <strong className={isDarkMode ? 'text-white' : 'text-[#111]'}>{userName}</strong>
+              </div>
+              <button onClick={handleLogout} className={`w-full p-2 text-[13px] font-bold border-none rounded cursor-pointer transition-colors ${isDarkMode ? 'bg-[#e0e0e0] text-[#111] hover:bg-white' : 'bg-[#111] text-white hover:bg-[#333]'}`}>
+                Logout
+              </button>
             </div>
           )}
         </div>

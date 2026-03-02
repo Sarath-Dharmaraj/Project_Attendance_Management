@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaTriangleExclamation } from "react-icons/fa6"; 
 import { FaCalendarAlt } from "react-icons/fa";
 
-// NEW: Accept isDarkMode as a prop
-const Dashboard = ({ isDarkMode }) => {
+const Dashboard = ({ isDarkMode, setToken }) => {
   const [user, setUser] = useState(null);
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [dashboardData, setDashboardData] = useState([]);
   const [rectificationRequests, setRectificationRequests] = useState([]); 
   const [message, setMessage] = useState({ type: '', text: '' });
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
+  
+  const navigate = useNavigate();
   const todayDate = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
@@ -24,7 +25,8 @@ const Dashboard = ({ isDarkMode }) => {
         const currentTime = Date.now() / 1000; 
         if (payload.exp < currentTime) {
           localStorage.removeItem('token'); 
-          window.location.href = '/login';   
+          setToken(null);
+          navigate('/login');
           return;
         }
         setUser(payload);
@@ -32,7 +34,8 @@ const Dashboard = ({ isDarkMode }) => {
         fetchRectifications(payload, token); 
       } catch (e) {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        setToken(null);
+        navigate('/login');
       }
     }
     return () => window.removeEventListener('resize', handleResize);
@@ -107,7 +110,7 @@ const Dashboard = ({ isDarkMode }) => {
     }
   };
 
-  if (!user) return <div style={{ padding: '20px', color: isDarkMode ? '#fff' : '#111' }}>Loading Dashboard...</div>;
+  if (!user) return <div className={`p-5 ${isDarkMode ? 'text-white' : 'text-[#111]'}`}>Loading Dashboard...</div>;
 
   const groupedDashboardData = dashboardData.reduce((acc, record) => {
     if (!acc[record.date]) acc[record.date] = [];
@@ -117,16 +120,15 @@ const Dashboard = ({ isDarkMode }) => {
   
   const sortedDates = Object.keys(groupedDashboardData).sort((a, b) => new Date(b) - new Date(a));
 
-  // Themed Colors setup
-  const cardBg = isDarkMode ? '#1e1e1e' : '#fff';
-  const textColor = isDarkMode ? '#e0e0e0' : '#111';
-  const subTextColor = isDarkMode ? '#a0a0a0' : '#444';
-  const borderColor = isDarkMode ? '#333' : '#eee';
-  const tableHeaderBg = isDarkMode ? '#2c2c2c' : '#f4f4f4';
-  const profileCardBg = isDarkMode ? '#1a1a1a' : '#222';
+  const cardTheme = isDarkMode ? 'bg-[#1e1e1e] border border-[#333] shadow-none' : 'bg-white border-none shadow-[0_2px_4px_rgba(0,0,0,0.05)]';
+  const textTheme = isDarkMode ? 'text-[#e0e0e0]' : 'text-[#111]';
+  const subTextTheme = isDarkMode ? 'text-[#a0a0a0]' : 'text-[#444]';
+  const borderTheme = isDarkMode ? 'border-[#333]' : 'border-[#eee]';
+  const headerBgTheme = isDarkMode ? 'bg-[#2c2c2c]' : 'bg-[#f4f4f4]';
+  const profileTheme = isDarkMode ? 'bg-[#1a1a1a] border border-[#333]' : 'bg-[#222] border-none shadow-md';
 
   return (
-    <div className="dashboard-wrapper" style={{ padding: isMobile ? '10px' : '20px', fontFamily: 'Arial, sans-serif', boxSizing: 'border-box', maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className="p-2.5 md:p-5 font-sans box-border max-w-[100vw] overflow-x-hidden">
       
       <style>{`
         ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -137,76 +139,82 @@ const Dashboard = ({ isDarkMode }) => {
         .thin-scrollbar::-webkit-scrollbar-thumb:hover { background: ${isDarkMode ? '#666' : '#999'}; }
       `}</style>
 
-      {message.text && <div style={{ position: 'fixed', top: '30px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, padding: '15px 30px', borderRadius: '6px', fontWeight: 'bold', backgroundColor: message.type === 'error' ? '#f2dede' : '#dff0d8', color: message.type === 'error' ? '#a94442' : '#3c763d', borderLeft: `5px solid ${message.type === 'error' ? '#a94442' : '#3c763d'}`, boxShadow: '0 8px 16px rgba(0,0,0,0.2)', transition: 'opacity 0.3s ease-in-out' }}>{message.text}</div>}
+      {message.text && (
+        <div className={`fixed top-[30px] left-1/2 -translate-x-1/2 z-[100] px-7 py-4 rounded-md font-bold shadow-lg transition-opacity duration-300 border-l-[5px] ${message.type === 'error' ? 'bg-[#f2dede] text-[#a94442] border-[#a94442]' : 'bg-[#dff0d8] text-[#3c763d] border-[#3c763d]'}`}>
+          {message.text}
+        </div>
+      )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+      <div className="flex flex-col gap-5 w-full">
         
-        {/* Profile Card */}
-        <div style={{ backgroundColor: profileCardBg, color: '#fff', padding: isMobile ? '20px' : '30px', borderRadius: '8px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '20px' : '0', boxShadow: isDarkMode ? 'none' : '0 4px 6px rgba(0,0,0,0.1)', border: isDarkMode ? '1px solid #333' : 'none' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' }}>
-            <h2 style={{ margin: 0, fontSize: isMobile ? '22px' : '26px', color: '#fff' }}>{user.userName}</h2>
-            <p style={{ margin: 0, fontSize: isMobile ? '14px' : '16px', color: '#ccc' }}>Date: <strong style={{ whiteSpace: 'nowrap', color: '#fff' }}>{todayDate}</strong></p>
-            <p style={{ margin: 0, fontSize: isMobile ? '14px' : '16px', color: '#ccc' }}>Department: <strong style={{ color: '#fff' }}>{user.department}</strong></p>
-            <p style={{ margin: 0, fontSize: isMobile ? '14px' : '16px', color: '#ccc' }}>Role: <strong style={{ color: '#fff' }}>{user.role?.toUpperCase()}</strong></p>
+        <div className={`p-5 md:p-[30px] rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-5 md:gap-0 ${profileTheme}`}>
+          <div className="flex flex-col gap-1.5 w-full text-white">
+            <h2 className="m-0 text-[22px] md:text-[26px]">{user.userName}</h2>
+            <p className="m-0 text-[14px] md:text-[16px] text-[#ccc]">Date: <strong className="whitespace-nowrap text-white">{todayDate}</strong></p>
+            <p className="m-0 text-[14px] md:text-[16px] text-[#ccc]">Department: <strong className="text-white">{user.department}</strong></p>
+            <p className="m-0 text-[14px] md:text-[16px] text-[#ccc]">Role: <strong className="text-white">{user.role?.toUpperCase()}</strong></p>
           </div>
           
-          <div style={{ textAlign: isMobile ? 'left' : 'right', display: 'flex', flexDirection: 'column', gap: isMobile ? '10px' : '15px', width: isMobile ? '100%' : 'auto' }}>
-            <div style={{ fontSize: isMobile ? '14px' : '16px', color: '#ccc' }}>
-              Status: <span style={{ padding: isMobile ? '6px 12px' : '8px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: isMobile ? '12px' : '14px', backgroundColor: todayAttendance === 'present' ? '#20bf6b' : todayAttendance === 'absent' ? '#eb3b5a' : '#555', color: '#fff', display: 'inline-block', marginLeft: isMobile ? '0' : '10px', marginTop: isMobile ? '5px' : '0' }}>{todayAttendance ? todayAttendance.toUpperCase() : 'NOT MARKED'}</span>
+          <div className="text-left md:text-right flex flex-col gap-2.5 md:gap-4 w-full md:w-auto">
+            <div className="text-[14px] md:text-[16px] text-[#ccc]">
+              Status: <span className={`px-3 md:px-4 py-1.5 md:py-2 rounded-[4px] font-bold text-[12px] md:text-[14px] text-white inline-block ml-0 md:ml-2.5 mt-1.5 md:mt-0 ${todayAttendance === 'present' ? 'bg-[#20bf6b]' : todayAttendance === 'absent' ? 'bg-[#eb3b5a]' : 'bg-[#555]'}`}>
+                {todayAttendance ? todayAttendance.toUpperCase() : 'NOT MARKED'}
+              </span>
             </div>
             
             {user.role !== 'admin' && !todayAttendance && (
-              <div style={{ display: 'flex', gap: '10px', flexDirection: isMobile ? 'column' : 'row', width: '100%', justifyContent: isMobile ? 'center' : 'flex-end' }}>
-                <button style={{ padding: isMobile ? '12px 15px' : '12px 20px', backgroundColor: '#20bf6b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: isMobile ? '100%' : 'auto', fontSize: isMobile ? '14px' : '16px' }} onClick={() => handleMarkAttendance('present')}>Mark Present</button>
-                <button style={{ padding: isMobile ? '12px 15px' : '12px 20px', backgroundColor: '#eb3b5a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: isMobile ? '100%' : 'auto', fontSize: isMobile ? '14px' : '16px' }} onClick={() => handleMarkAttendance('absent')}>Mark Absent</button>
+              <div className="flex flex-col md:flex-row gap-2.5 w-full justify-center md:justify-end">
+                <button className="py-3 px-[15px] md:px-[20px] bg-[#20bf6b] text-white border-none rounded-[4px] cursor-pointer font-bold w-full md:w-auto text-[14px] md:text-[16px] transition-opacity hover:opacity-80" onClick={() => handleMarkAttendance('present')}>Mark Present</button>
+                <button className="py-3 px-[15px] md:px-[20px] bg-[#eb3b5a] text-white border-none rounded-[4px] cursor-pointer font-bold w-full md:w-auto text-[14px] md:text-[16px] transition-opacity hover:opacity-80" onClick={() => handleMarkAttendance('absent')}>Mark Absent</button>
               </div>
             )}
             {user.role !== 'admin' && todayAttendance && (
-              <div style={{ color: '#20bf6b', fontWeight: 'bold', textAlign: isMobile ? 'left' : 'right', fontSize: isMobile ? '12px' : '14px' }}>Attendance logged for today.</div>
+              <div className="text-[#20bf6b] font-bold text-left md:text-right text-[12px] md:text-[14px]">Attendance logged for today.</div>
             )}
           </div>
         </div>
 
-        {/* Rectification Card */}
         {(user.role === 'manager' || user.role === 'admin') && (rectificationRequests?.length > 0) && (
-          <div className="thin-scrollbar" style={{ backgroundColor: cardBg, padding: isMobile ? '15px' : '20px', borderRadius: '8px', boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.05)', borderLeft: '4px solid #f39c12', border: isDarkMode ? '1px solid #333' : 'none', maxHeight: isMobile ? 'none' : '70vh', overflowY: isMobile ? 'visible' : 'auto' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: isMobile ? '18px' : '20px', color: textColor, borderBottom: `2px solid ${borderColor}`, paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}><FaTriangleExclamation color="#f39c12" /> Pending Rectification Requests</h3>
+          <div className={`p-[15px] md:p-[20px] rounded-lg border-l-4 border-l-[#f39c12] max-h-none md:max-h-[70vh] overflow-y-visible md:overflow-y-auto thin-scrollbar ${cardTheme}`}>
+            <h3 className={`m-0 mb-[15px] text-[18px] md:text-[20px] border-b-2 pb-2.5 flex items-center gap-2 ${textTheme} ${borderTheme}`}>
+              <FaTriangleExclamation className="text-[#f39c12]" /> Pending Rectification Requests
+            </h3>
             
             {isMobile ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div className="flex flex-col gap-[15px]">
                 {rectificationRequests.map((req, idx) => (
-                  <div key={idx} style={{ backgroundColor: tableHeaderBg, padding: '15px', borderRadius: '6px', border: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '5px', gap: '10px' }}><strong style={{ color: textColor, fontSize: '12px', whiteSpace: 'nowrap' }}>User ID:</strong> <span style={{ color: subTextColor, fontSize: '11px', wordBreak: 'break-all', textAlign: 'right' }}>{req.userId}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '5px' }}><strong style={{ color: textColor, fontSize: '12px' }}>Date:</strong> <span style={{ color: subTextColor, fontSize: '12px' }}>{req.date}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '5px' }}><strong style={{ color: textColor, fontSize: '12px' }}>Current Status:</strong> <span style={{ color: '#eb3b5a', fontWeight: 'bold', fontSize: '12px' }}>{req.attendance?.toUpperCase()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '5px' }}><strong style={{ color: textColor, fontSize: '12px' }}>Requested Edit:</strong> <span style={{ color: '#20bf6b', fontWeight: 'bold', fontSize: '12px' }}>{req.rectification?.toUpperCase()}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '5px' }}>
-                      <strong style={{ color: textColor, fontSize: '12px' }}>Action:</strong>
-                      <button style={{ padding: '8px 15px', backgroundColor: isDarkMode ? '#e0e0e0' : '#333', color: isDarkMode ? '#111' : '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }} onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}>Approve Edit</button>
+                  <div key={idx} className={`p-[15px] rounded-[6px] border flex flex-col gap-2 text-[14px] ${headerBgTheme} ${borderTheme}`}>
+                    <div className={`flex justify-between border-b pb-[5px] gap-2.5 ${borderTheme}`}><strong className={`text-[12px] whitespace-nowrap ${textTheme}`}>User ID:</strong> <span className={`text-[11px] break-all text-right ${subTextTheme}`}>{req.userId}</span></div>
+                    <div className={`flex justify-between border-b pb-[5px] ${borderTheme}`}><strong className={`text-[12px] ${textTheme}`}>Date:</strong> <span className={`text-[12px] ${subTextTheme}`}>{req.date}</span></div>
+                    <div className={`flex justify-between border-b pb-[5px] ${borderTheme}`}><strong className={`text-[12px] ${textTheme}`}>Current Status:</strong> <span className="text-[#eb3b5a] font-bold text-[12px]">{req.attendance?.toUpperCase()}</span></div>
+                    <div className={`flex justify-between border-b pb-[5px] ${borderTheme}`}><strong className={`text-[12px] ${textTheme}`}>Requested Edit:</strong> <span className="text-[#20bf6b] font-bold text-[12px]">{req.rectification?.toUpperCase()}</span></div>
+                    <div className="flex justify-between items-center pt-[5px]">
+                      <strong className={`text-[12px] ${textTheme}`}>Action:</strong>
+                      <button className={`py-2 px-[15px] border-none rounded-[4px] cursor-pointer font-bold text-[12px] transition-opacity hover:opacity-80 ${isDarkMode ? 'bg-[#e0e0e0] text-[#111]' : 'bg-[#333] text-white'}`} onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}>Approve Edit</button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="thin-scrollbar" style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px', tableLayout: 'fixed' }}>
+              <div className="overflow-x-auto thin-scrollbar">
+                <table className="w-full min-w-[600px] border-collapse text-left text-[14px] table-fixed">
                   <thead>
                     <tr>
-                      <th style={{ width: '25%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>User ID</th>
-                      <th style={{ width: '15%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor, whiteSpace: 'nowrap' }}>Date</th>
-                      <th style={{ width: '20%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Current Status</th>
-                      <th style={{ width: '20%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Requested Edit</th>
-                      <th style={{ width: '20%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Action</th>
+                      <th className={`w-1/4 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>User ID</th>
+                      <th className={`w-[15%] p-3 border-b-2 whitespace-nowrap ${headerBgTheme} ${borderTheme} ${textTheme}`}>Date</th>
+                      <th className={`w-1/5 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Current Status</th>
+                      <th className={`w-1/5 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Requested Edit</th>
+                      <th className={`w-1/5 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rectificationRequests.map((req, idx) => (
-                      <tr key={idx}>
-                        <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor, wordBreak: 'break-all' }}>{req.userId}</td>
-                        <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor, whiteSpace: 'nowrap' }}>{req.date}</td>
-                        <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}><span style={{ color: '#eb3b5a', fontWeight: 'bold' }}>{req.attendance?.toUpperCase()}</span></td>
-                        <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}><span style={{ color: '#20bf6b', fontWeight: 'bold' }}>{req.rectification?.toUpperCase()}</span></td>
-                        <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}><button style={{ padding: '6px 12px', backgroundColor: isDarkMode ? '#e0e0e0' : '#333', color: isDarkMode ? '#111' : '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }} onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}>Approve Edit</button></td>
+                      <tr key={idx} className={`transition-colors ${isDarkMode ? 'hover:bg-[#252525]' : 'hover:bg-[#fafafa]'}`}>
+                        <td className={`p-3 border-b break-all ${borderTheme} ${subTextTheme}`}>{req.userId}</td>
+                        <td className={`p-3 border-b whitespace-nowrap ${borderTheme} ${subTextTheme}`}>{req.date}</td>
+                        <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}><span className="text-[#eb3b5a] font-bold">{req.attendance?.toUpperCase()}</span></td>
+                        <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}><span className="text-[#20bf6b] font-bold">{req.rectification?.toUpperCase()}</span></td>
+                        <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}><button className={`py-1.5 px-3 border-none rounded-[4px] cursor-pointer font-bold text-[12px] transition-opacity hover:opacity-80 ${isDarkMode ? 'bg-[#e0e0e0] text-[#111]' : 'bg-[#333] text-white'}`} onClick={() => handleEditAttendance(req.userId, req.date, req.rectification)}>Approve Edit</button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -216,71 +224,78 @@ const Dashboard = ({ isDarkMode }) => {
           </div>
         )}
 
-        {/* History Card */}
-        <div className="thin-scrollbar" style={{ backgroundColor: cardBg, padding: isMobile ? '15px' : '20px', borderRadius: '8px', boxShadow: isDarkMode ? 'none' : '0 2px 4px rgba(0,0,0,0.05)', border: isDarkMode ? '1px solid #333' : 'none', maxHeight: isMobile ? 'none' : '70vh', overflowY: isMobile ? 'visible' : 'auto' }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: isMobile ? '18px' : '20px', color: textColor, borderBottom: `2px solid ${borderColor}`, paddingBottom: '10px' }}>{user.role === 'employee' ? 'My Attendance History' : user.role === 'admin' ? 'All Sector History' : <span>{user.department} Sector History</span>}</h3>
+        <div className={`p-[15px] md:p-[20px] rounded-lg max-h-none md:max-h-[70vh] overflow-y-visible md:overflow-y-auto thin-scrollbar ${cardTheme}`}>
+          <h3 className={`m-0 mb-[15px] text-[18px] md:text-[20px] border-b-2 pb-2.5 ${textTheme} ${borderTheme}`}>
+            {user.role === 'employee' ? 'My Attendance History' : user.role === 'admin' ? 'All Sector History' : <span>{user.department} Sector History</span>}
+          </h3>
           
           {sortedDates.length === 0 ? (
-            <p style={{ textAlign: 'center', color: subTextColor, padding: '10px', fontSize: isMobile ? '14px' : '16px' }}>No records found.</p>
+            <p className={`text-center p-2.5 text-[14px] md:text-[16px] ${subTextTheme}`}>No records found.</p>
           ) : (
             sortedDates.map((dateKey) => (
-              <div key={dateKey} style={{ marginBottom: isMobile ? '25px' : '20px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: isMobile ? '15px' : '16px', color: textColor, backgroundColor: tableHeaderBg, padding: '8px 12px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px', border: isDarkMode ? '1px solid #333' : 'none' }}><FaCalendarAlt color={isDarkMode ? '#888' : '#666'} /> {dateKey}</h4>
+              <div key={dateKey} className="mb-5 md:mb-6">
+                <h4 className={`m-0 mb-2.5 text-[15px] md:text-[16px] py-2 px-3 rounded-[4px] flex items-center gap-2 ${headerBgTheme} ${textTheme} ${isDarkMode ? 'border border-[#333]' : ''}`}>
+                  <FaCalendarAlt className={isDarkMode ? 'text-[#888]' : 'text-[#666]'} /> {dateKey}
+                </h4>
                 
                 {isMobile ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="flex flex-col gap-2.5">
                     {groupedDashboardData[dateKey].map((record, idx) => (
-                      <div key={idx} style={{ backgroundColor: tableHeaderBg, padding: '12px', borderRadius: '6px', border: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', boxShadow: isDarkMode ? 'none' : '0 1px 2px rgba(0,0,0,0.02)' }}>
-                        {user.role !== 'employee' && <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '4px', gap: '10px' }}><strong style={{ color: textColor, fontSize: '12px', whiteSpace: 'nowrap' }}>User ID:</strong> <span style={{ color: subTextColor, fontSize: '11px', wordBreak: 'break-all', textAlign: 'right' }}>{record.userId}</span></div>}
-                        {user.role === 'admin' && <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '4px' }}><strong style={{ color: textColor, fontSize: '12px' }}>Department:</strong> <span style={{ color: subTextColor, fontSize: '12px' }}>{record.department}</span></div>}
-                        {user.role !== 'employee' && <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '4px' }}><strong style={{ color: textColor, fontSize: '12px' }}>Role:</strong> <span style={{ color: subTextColor, fontSize: '12px' }}>{record.role?.toUpperCase() || 'N/A'}</span></div>}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${borderColor}`, paddingBottom: '4px', alignItems: 'center' }}>
-                          <strong style={{ color: textColor, fontSize: '12px' }}>Status:</strong>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', backgroundColor: record.attendance === 'present' ? '#e8f5e9' : '#ffebee', color: record.attendance === 'present' ? '#2e7d32' : '#c62828' }}>{record.attendance?.toUpperCase()}</span>
-                            {record.rectified && <span style={{ fontSize: '10px', color: isDarkMode ? '#bbb' : '#666', backgroundColor: isDarkMode ? '#444' : '#e0e0e0', padding: '2px 6px', borderRadius: '4px', border: isDarkMode ? '1px solid #555' : '1px solid #ccc' }}>RECTIFIED</span>}
+                      <div key={idx} className={`p-3 rounded-[6px] border flex flex-col gap-1.5 text-[14px] ${headerBgTheme} ${borderTheme} ${isDarkMode ? 'shadow-none' : 'shadow-[0_1px_2px_rgba(0,0,0,0.02)]'}`}>
+                        {user.role !== 'employee' && <div className={`flex justify-between border-b pb-1 gap-2.5 ${borderTheme}`}><strong className={`text-[12px] whitespace-nowrap ${textTheme}`}>User ID:</strong> <span className={`text-[11px] break-all text-right ${subTextTheme}`}>{record.userId}</span></div>}
+                        {user.role === 'admin' && <div className={`flex justify-between border-b pb-1 ${borderTheme}`}><strong className={`text-[12px] ${textTheme}`}>Department:</strong> <span className={`text-[12px] ${subTextTheme}`}>{record.department}</span></div>}
+                        {user.role !== 'employee' && <div className={`flex justify-between border-b pb-1 ${borderTheme}`}><strong className={`text-[12px] ${textTheme}`}>Role:</strong> <span className={`text-[12px] ${subTextTheme}`}>{record.role?.toUpperCase() || 'N/A'}</span></div>}
+                        <div className={`flex justify-between border-b pb-1 items-center ${borderTheme}`}>
+                          <strong className={`text-[12px] ${textTheme}`}>Status:</strong>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`py-1 px-2 rounded-[4px] text-[11px] font-bold ${record.attendance === 'present' ? 'bg-[#e8f5e9] text-[#2e7d32]' : 'bg-[#ffebee] text-[#c62828]'}`}>{record.attendance?.toUpperCase()}</span>
+                            {record.rectified && <span className={`text-[10px] py-[2px] px-1.5 rounded-[4px] border ${isDarkMode ? 'text-[#bbb] bg-[#444] border-[#555]' : 'text-[#666] bg-[#e0e0e0] border-[#ccc]'}`}>RECTIFIED</span>}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
-                          <strong style={{ color: textColor, fontSize: '12px' }}>Action:</strong>
+                        <div className="flex justify-between items-center pt-1">
+                          <strong className={`text-[12px] ${textTheme}`}>Action:</strong>
                           {(user.role === 'manager' || user.role === 'admin') ? (
-                            <select style={{ padding: '6px 10px', borderRadius: '4px', border: `1px solid ${borderColor}`, outline: 'none', backgroundColor: cardBg, color: textColor, fontSize: '12px' }} value={record.attendance} onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}><option value="present">Present</option><option value="absent">Absent</option></select>
+                            <select className={`py-1.5 px-2.5 rounded-[4px] border outline-none text-[12px] ${isDarkMode ? 'bg-[#1e1e1e] text-[#e0e0e0] border-[#333]' : 'bg-white text-[#111] border-[#ccc]'}`} value={record.attendance} onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}>
+                              <option value="present">Present</option><option value="absent">Absent</option>
+                            </select>
                           ) : (
-                            <span style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>Locked</span>
+                            <span className="text-[12px] text-[#999] italic">Locked</span>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="thin-scrollbar" style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', minWidth: '400px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px', tableLayout: 'fixed' }}>
+                  <div className="overflow-x-auto thin-scrollbar">
+                    <table className="w-full min-w-[400px] border-collapse text-left text-[14px] table-fixed">
                       <thead>
                         <tr>
-                          {user.role !== 'employee' && <th style={{ width: '25%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>User ID</th>}
-                          {user.role !== 'employee' && <th style={{ width: '15%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Role</th>}
-                          {user.role === 'admin' && <th style={{ width: '15%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Department</th>}
-                          <th style={{ width: '25%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Status</th>
-                          <th style={{ width: '20%', padding: '12px', backgroundColor: tableHeaderBg, borderBottom: `2px solid ${borderColor}`, color: textColor }}>Action</th>
+                          {user.role !== 'employee' && <th className={`w-1/4 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>User ID</th>}
+                          {user.role !== 'employee' && <th className={`w-[15%] p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Role</th>}
+                          {user.role === 'admin' && <th className={`w-[15%] p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Department</th>}
+                          <th className={`w-1/4 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Status</th>
+                          <th className={`w-1/5 p-3 border-b-2 ${headerBgTheme} ${borderTheme} ${textTheme}`}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {groupedDashboardData[dateKey].map((record, idx) => (
-                          <tr key={idx}>
-                            {user.role !== 'employee' && <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor, wordBreak: 'break-all' }}>{record.userId}</td>}
-                            {user.role !== 'employee' && <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}>{record.role?.toUpperCase() || 'N/A'}</td>}
-                            {user.role === 'admin' && <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}>{record.department}</td>}
-                            <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', backgroundColor: record.attendance === 'present' ? '#e8f5e9' : '#ffebee', color: record.attendance === 'present' ? '#2e7d32' : '#c62828' }}>{record.attendance?.toUpperCase()}</span>
-                                {record.rectified && <span style={{ fontSize: '10px', color: isDarkMode ? '#bbb' : '#666', backgroundColor: isDarkMode ? '#444' : '#e0e0e0', padding: '2px 6px', borderRadius: '4px', border: isDarkMode ? '1px solid #555' : '1px solid #ccc' }}>RECTIFIED</span>}
+                          <tr key={idx} className={`transition-colors ${isDarkMode ? 'hover:bg-[#252525]' : 'hover:bg-[#fafafa]'}`}>
+                            {user.role !== 'employee' && <td className={`p-3 border-b break-all ${borderTheme} ${subTextTheme}`}>{record.userId}</td>}
+                            {user.role !== 'employee' && <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}>{record.role?.toUpperCase() || 'N/A'}</td>}
+                            {user.role === 'admin' && <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}>{record.department}</td>}
+                            <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}>
+                              <div className="flex items-center gap-2">
+                                <span className={`py-1 px-2 rounded-[4px] text-[11px] font-bold ${record.attendance === 'present' ? 'bg-[#e8f5e9] text-[#2e7d32]' : 'bg-[#ffebee] text-[#c62828]'}`}>{record.attendance?.toUpperCase()}</span>
+                                {record.rectified && <span className={`text-[10px] py-[2px] px-1.5 rounded-[4px] border ${isDarkMode ? 'text-[#bbb] bg-[#444] border-[#555]' : 'text-[#666] bg-[#e0e0e0] border-[#ccc]'}`}>RECTIFIED</span>}
                               </div>
                             </td>
-                            <td style={{ padding: '12px', borderBottom: `1px solid ${borderColor}`, color: subTextColor }}>
+                            <td className={`p-3 border-b ${borderTheme} ${subTextTheme}`}>
                               {(user.role === 'manager' || user.role === 'admin') ? (
-                                <select style={{ padding: '6px', borderRadius: '4px', border: `1px solid ${borderColor}`, outline: 'none', backgroundColor: cardBg, color: textColor }} value={record.attendance} onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}><option value="present">Present</option><option value="absent">Absent</option></select>
+                                <select className={`py-1.5 px-2 rounded-[4px] border outline-none ${isDarkMode ? 'bg-[#1e1e1e] text-[#e0e0e0] border-[#333]' : 'bg-white text-[#111] border-[#ccc]'}`} value={record.attendance} onChange={(e) => handleEditAttendance(record.userId, record.date, e.target.value)}>
+                                  <option value="present">Present</option><option value="absent">Absent</option>
+                                </select>
                               ) : (
-                                <span style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>Locked</span>
+                                <span className="text-[12px] text-[#999] italic">Locked</span>
                               )}
                             </td>
                           </tr>

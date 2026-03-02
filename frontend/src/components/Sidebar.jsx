@@ -1,47 +1,61 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaClipboardList, FaCog, FaSignOutAlt } from 'react-icons/fa'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaHome, FaClipboardList, FaCog, FaSignOutAlt, FaUser } from 'react-icons/fa'; 
 
-const Sidebar = ({ closeSidebar, isMobile }) => {
+const Sidebar = ({ closeSidebar, isMobile, setToken }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const getLinkStyle = (path) => ({
-    display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 20px', 
-    color: location.pathname === path ? '#0fb9b1' : '#d1d8e0', 
-    backgroundColor: location.pathname === path ? '#353b48' : 'transparent',
-    textDecoration: 'none', fontSize: '16px', borderLeft: location.pathname === path ? '4px solid #0fb9b1' : '4px solid transparent',
-    transition: 'all 0.2s ease-in-out'
-  });
+  let userRole = '';
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userRole = payload.role;
+    } catch (e) {
+      console.error("Failed to decode token");
+    }
+  }
+
+  const getLinkClasses = (path) => {
+    const isActive = location.pathname === path;
+    return `flex items-center gap-4 px-5 py-4 text-base no-underline border-l-4 transition-all duration-200 ${isActive ? 'text-white bg-[#333] border-white' : 'text-[#a0a0a0] border-transparent hover:bg-[#222] hover:text-[#e0e0e0]'}`;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login'; 
+    setToken(null); 
+    navigate('/login'); 
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#2f3640', color: '#fff', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
-      <div style={{ padding: '25px 20px', borderBottom: '1px solid #353b48', marginBottom: '10px' }}>
-        <h2 style={{ margin: 0, fontSize: '22px', color: '#0fb9b1', textAlign: 'center' }}>Portal</h2>
+    <div className="flex flex-col h-full bg-[#1a1a1a] text-white shadow-lg">
+      <div className="p-6 border-b border-[#333] mb-2">
+        <h2 className="m-0 text-[22px] text-white text-center font-bold tracking-wide">Portal</h2>
       </div>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <Link to="/" style={getLinkStyle('/')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
+      <nav className="flex flex-col flex-1">
+        <Link to="/" className={getLinkClasses('/')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
           <FaHome /> Dashboard
         </Link>
-        <Link to="/log" style={getLinkStyle('/log')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
-          <FaClipboardList /> Logs
+        <Link to="/profile" className={getLinkClasses('/profile')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
+          <FaUser /> Profile
         </Link>
-        <Link to="/settings" style={getLinkStyle('/settings')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
+        {userRole === 'admin' && (
+          <Link to="/log" className={getLinkClasses('/log')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
+            <FaClipboardList /> Audit Logs
+          </Link>
+        )}
+        <Link to="/settings" className={getLinkClasses('/settings')} onClick={() => isMobile && closeSidebar && closeSidebar()}>
           <FaCog /> Settings
         </Link>
 
-        {/* NEW: Logout Button pinned perfectly underneath the other links */}
-        <button style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 20px', color: '#eb3b5a', backgroundColor: 'transparent', border: 'none', borderLeft: '4px solid transparent', fontSize: '16px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.2s ease-in-out', marginTop: 'auto' }} onClick={handleLogout}>
+        <button onClick={handleLogout} className="flex items-center gap-4 px-5 py-4 text-[#eb3b5a] bg-transparent border-none border-l-4 border-transparent text-base cursor-pointer text-left w-full transition-all duration-200 mt-auto hover:bg-[#222] hover:text-[#ff6b81]">
           <FaSignOutAlt /> Logout
         </button>
       </nav>
       
-      <div style={{ padding: '20px', borderTop: '1px solid #353b48', fontSize: '12px', color: '#7f8fa6', textAlign: 'center' }}>
+      <div className="p-5 border-t border-[#333] text-xs text-[#7f8fa6] text-center">
         v1.0.0
       </div>
     </div>
