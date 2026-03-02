@@ -118,8 +118,14 @@ app.put('/attendance/edit', auth, roleAuth(['manager', 'admin']), async (req, re
 app.get('/dashboard', auth, async (req, res) => {
   try {
     const { role, userId, department } = req.user;
-    const date = req.query.date || new Date().toISOString().slice(0, 10);
-    let data = (role === 'employee') ? await AttendanceDB.find({ userId }) : (role === 'manager') ? await AttendanceDB.find({ department, date }) : await AttendanceDB.find({ date });
+    
+    // We removed the 'date' filter so it fetches ALL history, sorted by newest first!
+    let data = (role === 'employee') 
+      ? await AttendanceDB.find({ userId }).sort({ date: -1 }) 
+      : (role === 'manager') 
+        ? await AttendanceDB.find({ department }).sort({ date: -1 }) 
+        : await AttendanceDB.find().sort({ date: -1 });
+        
     res.status(200).json({ data });
   } catch (err) {
     res.status(500).send('Server error');
